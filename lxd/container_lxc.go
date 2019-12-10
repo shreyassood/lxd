@@ -4330,7 +4330,7 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 
 				// Parse memory
 				if memory == "" {
-					memory = "-1"
+					memory = "max"
 				} else if strings.HasSuffix(memory, "%") {
 					percent, err := strconv.ParseInt(strings.TrimSuffix(memory, "%"), 10, 64)
 					if err != nil {
@@ -4389,20 +4389,20 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 
 				// Reset everything
 				if c.state.OS.CGroupSwapAccounting != sys.CGroupDisabled {
-					err = c.CGroupSetV1("memory.memsw.limit_in_bytes", "-1")
+					err = c.CGroupSetV1("memory.memsw.limit_in_bytes", "max")
 					if err != nil {
 						revertMemory()
 						return err
 					}
 				}
-				err = c.CGroupSet(cgroup.MemoryLimitInBytes, "-1")
+				err = c.CGroupSet(cgroup.MemoryLimitInBytes, "max")
 
 				//err = c.CGroupSetV1("memory.limit_in_bytes", "-1")
 				if err != nil {
 					revertMemory()
 					return err
 				}
-				err = c.CGroupSet(cgroup.MemorySoftLimitInBytes, "-1")
+				err = c.CGroupSet(cgroup.MemorySoftLimitInBytes, "max")
 				//err = c.CGroupSetV1("memory.soft_limit_in_bytes", "-1")
 				if err != nil {
 					revertMemory()
