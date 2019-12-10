@@ -1,17 +1,20 @@
-// +build linux,cgo,!agent
+
 
 package sys
 
 import (
 	"fmt"
+	"io/ioutil"
+	"strings"
 
 	"github.com/lxc/lxd/shared"
 	"github.com/lxc/lxd/shared/logger"
 )
 
+
 // Detect CGroup support.
 func (s *OS) initCGroup() {
-	flags := []*bool{
+	cgroupsinfo := []*CGroupInfo{
 		&s.CGroupBlkioController,
 		&s.CGroupBlkioWeightController,
 		&s.CGroupCPUController,
@@ -24,9 +27,23 @@ func (s *OS) initCGroup() {
 		&s.CGroupPidsController,
 		&s.CGroupSwapAccounting,
 	}
-	for i, flag := range flags {
-		*flag = shared.PathExists("/sys/fs/cgroup/" + cGroups[i].path)
-		if !*flag {
+
+	// Read all v2 controllers for later parsing
+	v2controllers := ""
+	contents, err := ioutil.ReadFile("/sys/fs/cgroup/cgroup.controllers")
+	if err != nil {
+		v2controllers = string(contents)
+	}
+
+	for i, info := range cgroupsinfo  {
+		if shared.PathExists("/sys/fs/cgroup/" + cGroups[i].path) {
+			// Check v1 support
+			*info = CGroupV1
+		} else if strings.Contains(v2controllers, cGroups[i].path) {
+			// Check v2 support
+			*info = CGroupV2
+		} else {
+			*info = CGroupDisabled
 			logger.Warnf(cGroups[i].warn)
 		}
 	}

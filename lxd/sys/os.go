@@ -30,6 +30,14 @@ type InotifyInfo struct {
 	Targets map[string]*InotifyTargetInfo
 }
 
+
+type CGroupInfo int
+const (
+	CGroupDisabled CGroupInfo = iota
+	CGroupV1
+	CGroupV2
+)
+
 // OS is a high-level facade for accessing all operating-system
 // level functionality that LXD uses.
 type OS struct {
@@ -55,18 +63,23 @@ type OS struct {
 	AppArmorStacked   bool
 	AppArmorStacking  bool
 
-	// Cgroup features
-	CGroupBlkioController       bool
-	CGroupBlkioWeightController bool
-	CGroupCPUacctController     bool
-	CGroupCPUController         bool
-	CGroupCPUsetController      bool
-	CGroupDevicesController     bool
-	CGroupFreezerController     bool
-	CGroupMemoryController      bool
-	CGroupNetPrioController     bool
-	CGroupPidsController        bool
-	CGroupSwapAccounting        bool
+	
+
+
+	CGroupBlkioController       CGroupInfo
+	CGroupBlkioWeightController CGroupInfo
+	CGroupCPUacctController     CGroupInfo
+	CGroupCPUController         CGroupInfo
+	CGroupCPUsetController      CGroupInfo
+	CGroupDevicesController     CGroupInfo
+	CGroupFreezerController     CGroupInfo
+	CGroupMemoryController      CGroupInfo
+	CGroupNetPrioController     CGroupInfo
+	CGroupPidsController        CGroupInfo
+	CGroupSwapAccounting        CGroupInfo
+
+	// TODO not used
+	CGroupUnifiedHierarchy bool
 
 	// Kernel features
 	NetnsGetifaddrs         bool
