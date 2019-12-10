@@ -67,7 +67,6 @@ func Get(c *lxc.Container, os *sys.OS, property Property) ([]string, error) {
 
 		}
 	}
-
 	return nil, fmt.Errorf("CGroup Property not supported for Get")
 }
 

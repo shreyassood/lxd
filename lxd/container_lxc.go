@@ -1146,7 +1146,6 @@ func (c *containerLXC) initLXC(config bool) error {
 			} else {
 				if c.state.OS.CGroupSwapAccounting == sys.CGroupDisabled && (memorySwap == "" || shared.IsTrue(memorySwap)) {
 					err = lxcsetConfigItemApi(cc, cgroup.MemoryLimitInBytes,  fmt.Sprintf("%d", valueInt), c.state.OS)
-
 					//err = lxcSetConfigItem(cc, "lxc.cgroup.memory.limit_in_bytes", fmt.Sprintf("%d", valueInt))
 					if err != nil {
 						return err
@@ -1156,13 +1155,15 @@ func (c *containerLXC) initLXC(config bool) error {
 						return err
 					}
 				} else {
-					err = lxcSetConfigItem(cc, "lxc.cgroup.memory.limit_in_bytes", fmt.Sprintf("%d", valueInt))
+					err = lxcsetConfigItemApi(cc, cgroup.MemoryLimitInBytes,  fmt.Sprintf("%d", valueInt), c.state.OS)
+					//err = lxcSetConfigItem(cc, "lxc.cgroup.memory.limit_in_bytes", fmt.Sprintf("%d", valueInt))
 					if err != nil {
 						return err
 					}
 				}
 				// Set soft limit to value 10% less than hard limit
-				err = lxcSetConfigItem(cc, "lxc.cgroup.memory.soft_limit_in_bytes", fmt.Sprintf("%.0f", float64(valueInt)*0.9))
+				err = lxcsetConfigItemApi(cc, cgroup.MemorySoftLimitInBytes,  fmt.Sprintf("%.0f", float64(valueInt)*0.9), c.state.OS)
+				//err = lxcSetConfigItem(cc, "lxc.cgroup.memory.soft_limit_in_bytes", fmt.Sprintf("%.0f", float64(valueInt)*0.9))
 				if err != nil {
 					return err
 				}
@@ -1171,6 +1172,7 @@ func (c *containerLXC) initLXC(config bool) error {
 
 		// Configure the swappiness
 		if memorySwap != "" && !shared.IsTrue(memorySwap) {
+			//TODO-our
 			err = lxcSetConfigItem(cc, "lxc.cgroup.memory.swappiness", "0")
 			if err != nil {
 				return err
@@ -1199,7 +1201,9 @@ func (c *containerLXC) initLXC(config bool) error {
 		}
 
 		if cpuShares != "1024" {
-			err = lxcSetConfigItem(cc, "lxc.cgroup.cpu.shares", cpuShares)
+			err = lxcsetConfigItemApi(cc, cgroup.CpuShares, cpuShares, c.state.OS)
+
+			//err = lxcSetConfigItem(cc, "lxc.cgroup.cpu.shares", cpuShares)
 			if err != nil {
 				return err
 			}
@@ -1228,8 +1232,9 @@ func (c *containerLXC) initLXC(config bool) error {
 			if err != nil {
 				return err
 			}
+			err = lxcsetConfigItemApi(cc, cgroup.PidsMax, fmt.Sprintf("%d", valueInt), c.state.OS)
 
-			err = lxcSetConfigItem(cc, "lxc.cgroup.pids.max", fmt.Sprintf("%d", valueInt))
+			//err = lxcSetConfigItem(cc, "lxc.cgroup.pids.max", fmt.Sprintf("%d", valueInt))
 			if err != nil {
 				return err
 			}
@@ -4341,11 +4346,14 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 
 				revertMemory := func() {
 					if oldSoftLimit != "" {
-						c.CGroupSetV1("memory.soft_limit_in_bytes", oldSoftLimit)
+						c.CGroupSet(cgroup.MemorySoftLimitInBytes, oldSoftLimit)
+						//c.CGroupSetV1("memory.soft_limit_in_bytes", oldSoftLimit)
 					}
 
 					if oldLimit != "" {
-						c.CGroupSetV1("memory.limit_in_bytes", oldLimit)
+						//c.CGroupSetV1("memory.limit_in_bytes", oldLimit)
+						c.CGroupSet(cgroup.MemoryLimitInBytes, oldLimit)
+
 					}
 
 					if oldMemswLimit != "" {
@@ -4361,14 +4369,15 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 						return err
 					}
 				}
+				err = c.CGroupSet(cgroup.MemoryLimitInBytes, "-1")
 
-				err = c.CGroupSetV1("memory.limit_in_bytes", "-1")
+				//err = c.CGroupSetV1("memory.limit_in_bytes", "-1")
 				if err != nil {
 					revertMemory()
 					return err
 				}
-
-				err = c.CGroupSetV1("memory.soft_limit_in_bytes", "-1")
+				err = c.CGroupSet(cgroup.MemorySoftLimitInBytes, "-1")
+				//err = c.CGroupSetV1("memory.soft_limit_in_bytes", "-1")
 				if err != nil {
 					revertMemory()
 					return err
@@ -4377,14 +4386,17 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 				// Set the new values
 				if memoryEnforce == "soft" {
 					// Set new limit
-					err = c.CGroupSetV1("memory.soft_limit_in_bytes", memory)
+					err = c.CGroupSet(cgroup.MemorySoftLimitInBytes, memory)
+					//err = c.CGroupSetV1("memory.soft_limit_in_bytes", memory)
 					if err != nil {
 						revertMemory()
 						return err
 					}
 				} else {
 					if c.state.OS.CGroupSwapAccounting != sys.CGroupDisabled && (memorySwap == "" || shared.IsTrue(memorySwap)) {
-						err = c.CGroupSetV1("memory.limit_in_bytes", memory)
+						err = c.CGroupSet(cgroup.MemoryLimitInBytes, memory)
+
+						//err = c.CGroupSetV1("memory.limit_in_bytes", memory)
 						if err != nil {
 							revertMemory()
 							return err
@@ -4396,7 +4408,9 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 							return err
 						}
 					} else {
-						err = c.CGroupSetV1("memory.limit_in_bytes", memory)
+						err = c.CGroupSet(cgroup.MemoryLimitInBytes, memory)
+
+						//err = c.CGroupSetV1("memory.limit_in_bytes", memory)
 						if err != nil {
 							revertMemory()
 							return err
@@ -4409,8 +4423,9 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 						revertMemory()
 						return err
 					}
+					err = c.CGroupSet(cgroup.MemorySoftLimitInBytes, fmt.Sprintf("%.0f", float64(valueInt)*0.9))
 
-					err = c.CGroupSetV1("memory.soft_limit_in_bytes", fmt.Sprintf("%.0f", float64(valueInt)*0.9))
+					//err = c.CGroupSetV1("memory.soft_limit_in_bytes", fmt.Sprintf("%.0f", float64(valueInt)*0.9))
 					if err != nil {
 						revertMemory()
 						return err
