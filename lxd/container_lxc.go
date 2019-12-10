@@ -871,8 +871,8 @@ func (c *containerLXC) initLXC(config bool) error {
 	// Configure devices cgroup
 	if c.IsPrivileged() && !c.state.OS.RunningInUserNS && c.state.OS.CGroupDevicesController != sys.CGroupDisabled {
 
-		//err = lxcSetConfigItem(cc, "lxc.cgroup.devices.deny", "a")
-		err = lxcsetConfigItemApi(cc, cgroup.DevicesDeny, "a", c.state.OS)
+		err = lxcSetConfigItem(cc, "lxc.cgroup.devices.deny", "a")
+		//err = lxcsetConfigItemApi(cc, cgroup.DevicesDeny, "a", c.state.OS)
 		if err != nil {
 			return err
 		}
@@ -894,8 +894,8 @@ func (c *containerLXC) initLXC(config bool) error {
 		}
 
 		for _, dev := range devices {
-		//	err = lxcSetConfigItem(cc, "lxc.cgroup.devices.allow", dev)
-			err = lxcsetConfigItemApi(cc, cgroup.DevicesAllow, dev, c.state.OS)
+			err = lxcSetConfigItem(cc, "lxc.cgroup.devices.allow", dev)
+		//	err = lxcsetConfigItemApi(cc, cgroup.DevicesAllow, dev, c.state.OS)
 
 			if err != nil {
 				return err
@@ -1138,15 +1138,15 @@ func (c *containerLXC) initLXC(config bool) error {
 			}
 
 			if memoryEnforce == "soft" {
-				err = lxcsetConfigItemApi(cc, cgroup.MemorySoftLimitInBytes,  fmt.Sprintf("%d", valueInt), c.state.OS)
-				//err = lxcSetConfigItem(cc, "lxc.cgroup.memory.soft_limit_in_bytes", fmt.Sprintf("%d", valueInt))
+				//err = lxcsetConfigItemApi(cc, cgroup.MemorySoftLimitInBytes,  fmt.Sprintf("%d", valueInt), c.state.OS)
+				err = lxcSetConfigItem(cc, "lxc.cgroup.memory.soft_limit_in_bytes", fmt.Sprintf("%d", valueInt))
 				if err != nil {
 					return err
 				}
 			} else {
 				if c.state.OS.CGroupSwapAccounting == sys.CGroupDisabled && (memorySwap == "" || shared.IsTrue(memorySwap)) {
-					err = lxcsetConfigItemApi(cc, cgroup.MemoryLimitInBytes,  fmt.Sprintf("%d", valueInt), c.state.OS)
-					//err = lxcSetConfigItem(cc, "lxc.cgroup.memory.limit_in_bytes", fmt.Sprintf("%d", valueInt))
+					//err = lxcsetConfigItemApi(cc, cgroup.MemoryLimitInBytes,  fmt.Sprintf("%d", valueInt), c.state.OS)
+					err = lxcSetConfigItem(cc, "lxc.cgroup.memory.limit_in_bytes", fmt.Sprintf("%d", valueInt))
 					if err != nil {
 						return err
 					}
@@ -1155,15 +1155,15 @@ func (c *containerLXC) initLXC(config bool) error {
 						return err
 					}
 				} else {
-					err = lxcsetConfigItemApi(cc, cgroup.MemoryLimitInBytes,  fmt.Sprintf("%d", valueInt), c.state.OS)
-					//err = lxcSetConfigItem(cc, "lxc.cgroup.memory.limit_in_bytes", fmt.Sprintf("%d", valueInt))
+					//err = lxcsetConfigItemApi(cc, cgroup.MemoryLimitInBytes,  fmt.Sprintf("%d", valueInt), c.state.OS)
+					err = lxcSetConfigItem(cc, "lxc.cgroup.memory.limit_in_bytes", fmt.Sprintf("%d", valueInt))
 					if err != nil {
 						return err
 					}
 				}
 				// Set soft limit to value 10% less than hard limit
-				err = lxcsetConfigItemApi(cc, cgroup.MemorySoftLimitInBytes,  fmt.Sprintf("%.0f", float64(valueInt)*0.9), c.state.OS)
-				//err = lxcSetConfigItem(cc, "lxc.cgroup.memory.soft_limit_in_bytes", fmt.Sprintf("%.0f", float64(valueInt)*0.9))
+				//err = lxcsetConfigItemApi(cc, cgroup.MemorySoftLimitInBytes,  fmt.Sprintf("%.0f", float64(valueInt)*0.9), c.state.OS)
+				err = lxcSetConfigItem(cc, "lxc.cgroup.memory.soft_limit_in_bytes", fmt.Sprintf("%.0f", float64(valueInt)*0.9))
 				if err != nil {
 					return err
 				}
@@ -1201,9 +1201,9 @@ func (c *containerLXC) initLXC(config bool) error {
 		}
 
 		if cpuShares != "1024" {
-			err = lxcsetConfigItemApi(cc, cgroup.CpuShares, cpuShares, c.state.OS)
+			//err = lxcsetConfigItemApi(cc, cgroup.CpuShares, cpuShares, c.state.OS)
 
-			//err = lxcSetConfigItem(cc, "lxc.cgroup.cpu.shares", cpuShares)
+			err = lxcSetConfigItem(cc, "lxc.cgroup.cpu.shares", cpuShares)
 			if err != nil {
 				return err
 			}
@@ -1232,9 +1232,9 @@ func (c *containerLXC) initLXC(config bool) error {
 			if err != nil {
 				return err
 			}
-			err = lxcsetConfigItemApi(cc, cgroup.PidsMax, fmt.Sprintf("%d", valueInt), c.state.OS)
+			//err = lxcsetConfigItemApi(cc, cgroup.PidsMax, fmt.Sprintf("%d", valueInt), c.state.OS)
 
-			//err = lxcSetConfigItem(cc, "lxc.cgroup.pids.max", fmt.Sprintf("%d", valueInt))
+			err = lxcSetConfigItem(cc, "lxc.cgroup.pids.max", fmt.Sprintf("%d", valueInt))
 			if err != nil {
 				return err
 			}
