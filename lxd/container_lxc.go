@@ -1144,7 +1144,7 @@ func (c *containerLXC) initLXC(config bool) error {
 					return err
 				}
 			} else {
-				if c.state.OS.CGroupSwapAccounting == sys.CGroupDisabled && (memorySwap == "" || shared.IsTrue(memorySwap)) {
+				if c.state.OS.CGroupSwapAccounting != sys.CGroupDisabled && (memorySwap == "" || shared.IsTrue(memorySwap)) {
 					//err = lxcsetConfigItemApi(cc, cgroup.MemoryLimitInBytes,  fmt.Sprintf("%d", valueInt), c.state.OS)
 					err = lxcSetConfigItem(cc, "lxc.cgroup.memory.limit_in_bytes", fmt.Sprintf("%d", valueInt))
 					if err != nil {
