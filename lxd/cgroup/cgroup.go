@@ -84,7 +84,6 @@ func Set(c *lxc.Container, property Property, value string, os *sys.OS) error {
 	}
 
 	for _, rule := range configs {
-		return fmt.Errorf("Export Not implemented %s", rule.Key)
 		err := c.SetCgroupItem(rule.Key, rule.Value)
 		if err != nil {
 			return fmt.Errorf("Failure while trying to set property: %s", err)
