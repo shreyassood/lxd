@@ -3861,6 +3861,7 @@ func (c *containerLXC) CGroupSet(property cgroup.Property, value string) error {
 	// Load the go-lxc struct
 	err := c.initLXC(false)
 	if err != nil {
+		logger.Warnf("whatttti %s", err)
 		return err
 	}
 
@@ -3871,6 +3872,7 @@ func (c *containerLXC) CGroupSet(property cgroup.Property, value string) error {
 
 	err = cgroup.Set(c.c, property, value, c.state.OS)
 	if err != nil {
+		logger.Warnf("trees %s", err)
 		return fmt.Errorf("Failed to set cgroup item %d=\"%s\": %s", property, value, err)
 	}
 
@@ -4426,6 +4428,7 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 							return err
 						}
 
+						logger.Warnf("hello9")
 						err = c.CGroupSetV1("memory.memsw.limit_in_bytes", memory)
 						if err != nil {
 							revertMemory()
@@ -4447,6 +4450,8 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 						revertMemory()
 						return err
 					}
+
+						logger.Warnf("hello10")
 					err = c.CGroupSet(cgroup.MemorySoftLimitInBytes, fmt.Sprintf("%.0f", float64(valueInt)*0.9))
 
 					//err = c.CGroupSetV1("memory.soft_limit_in_bytes", fmt.Sprintf("%.0f", float64(valueInt)*0.9))
@@ -4519,22 +4524,29 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 				logger.Warnf("Failed to adlkjvice n")
 
 				if c.state.OS.CGroupPidsController == sys.CGroupDisabled {
+					logger.Warnf("I shouldn't be here")
 					continue
+
 				}
 
 				if value == "" {
+					logger.Warnf("sup1")
 					err = c.CGroupSet(cgroup.PidsCurrent, "max")
 					if err != nil {
 						return err
 					}
 				} else {
+					logger.Warnf("sup2")
 					valueInt, err := strconv.ParseInt(value, 10, 64)
 					if err != nil {
 						return err
 					}
 
+					logger.Warnf("sup3")
+
 					err = c.CGroupSet(cgroup.PidsMax, fmt.Sprintf("%d", valueInt))
 					if err != nil {
+						logger.Warnf("sup4")
 						return err
 					}
 				}

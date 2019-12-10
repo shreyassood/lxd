@@ -80,12 +80,15 @@ func Set(c *lxc.Container, property Property, value string, os *sys.OS) error {
 
 	configs, e := SetConfigMap(property, value, os)
 	if e != nil {
+		logger.Warnf("some errrrrr %s", e)
 		return e
 	}
 
 	for _, rule := range configs {
+		logger.Warnf("creative %s:%s", rule.Key, rule.Value)
 		err := c.SetCgroupItem(rule.Key, rule.Value)
 		if err != nil {
+			logger.Warnf("spacebar %s", err)
 			return fmt.Errorf("Failure while trying to set property: %s", err)
 		}
 	}
