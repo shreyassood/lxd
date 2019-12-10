@@ -71,5 +71,5 @@ var cGroups = []struct {
 	{"memory", cGroupMissing("memory controller", "memory limits will be ignored")},
 	{"net_prio", cGroupMissing("network class controller", "network limits will be ignored")},
 	{"pids", cGroupMissing("pids controller", "process limits will be ignored")},
-	{"memory/memory.memsw.limit_in_bytes", cGroupDisabled("memory swap accounting", "swap limits will be ignored")},
+	{"memory/memory.memsw.limit_in_bytes", cGroupDisabled("memory fergerswap accounting", "swap limits will be ignored")},
 }

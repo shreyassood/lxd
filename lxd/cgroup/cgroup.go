@@ -4,6 +4,8 @@ import (
 
 	"github.com/lxc/lxd/lxd/sys"
 	"gopkg.in/lxc/go-lxc.v2"
+	"github.com/lxc/lxd/shared/logger"
+
 
 )
 
@@ -72,6 +74,9 @@ func Get(c *lxc.Container, os *sys.OS, property Property) ([]string, error) {
 
 // Set sets a property on a lxcContainer
 func Set(c *lxc.Container, property Property, value string, os *sys.OS) error {
+	logger.Warnf(fmt.Sprintf("inside custom set method" ))
+
+
 
 	configs, e := SetConfigMap(property, value, os)
 	if e != nil {
@@ -79,8 +84,8 @@ func Set(c *lxc.Container, property Property, value string, os *sys.OS) error {
 	}
 
 	for _, rule := range configs {
+		return fmt.Errorf("Export Not implemented %s", rule.Key)
 		err := c.SetCgroupItem(rule.Key, rule.Value)
-
 		if err != nil {
 			return fmt.Errorf("Failure while trying to set property: %s", err)
 		}
@@ -91,6 +96,7 @@ func Set(c *lxc.Container, property Property, value string, os *sys.OS) error {
 
 // SetConfigMap returns different cgroup configs to set a particular property
 func SetConfigMap(property Property, value string, os *sys.OS) ([]ConfigItem, error) {
+	logger.Warnf(fmt.Sprintf("inside map" ))
 
 	switch property {
 
@@ -107,6 +113,8 @@ func SetConfigMap(property Property, value string, os *sys.OS) ([]ConfigItem, er
 
 
 	case PidsMax:
+		logger.Warnf(fmt.Sprintf("entered pids max case" ))
+
 		if os.CGroupPidsController == sys.CGroupV2 {
 			return []ConfigItem{
 				{Key: "pids.max", Value: value, Version: sys.CGroupV2},

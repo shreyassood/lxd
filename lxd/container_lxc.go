@@ -137,7 +137,7 @@ func lxcsetConfigItemApi(c *lxc.Container, property cgroup.Property, value strin
 				return lxcSetConfigItem(c, config_name, rule.Value)
 			}
 			if rule.Version == sys.CGroupV2 {
-				var config_name string ="lxc.cgroup."+ rule.Key
+				var config_name string ="lxc.cgroup2."+ rule.Key
 				return lxcSetConfigItem(c, config_name, rule.Value)
 			}
 
@@ -1109,6 +1109,8 @@ func (c *containerLXC) initLXC(config bool) error {
 	}
 
 	// Memory limits
+	//logger.Warnf(
+	logger.Debugf("Failed to uidshift device n")
 	if c.state.OS.CGroupMemoryController != sys.CGroupDisabled {
 		memory := c.expandedConfig["limits.memory"]
 		memoryEnforce := c.expandedConfig["limits.memory.enforce"]
@@ -1225,16 +1227,21 @@ func (c *containerLXC) initLXC(config bool) error {
 	}
 
 	// Processes
+	logger.Warnf(fmt.Sprintf("about to enter pids controller *******"))
+
 	if c.state.OS.CGroupPidsController != sys.CGroupDisabled {
+		logger.Warnf(fmt.Sprintf("entered*******"))
+
 		processes := c.expandedConfig["limits.processes"]
 		if processes != "" {
 			valueInt, err := strconv.ParseInt(processes, 10, 64)
 			if err != nil {
 				return err
 			}
-			//err = lxcsetConfigItemApi(cc, cgroup.PidsMax, fmt.Sprintf("%d", valueInt), c.state.OS)
+			err = lxcsetConfigItemApi(cc, cgroup.PidsMax, fmt.Sprintf("%d", valueInt), c.state.OS)
+			logger.Warnf(fmt.Sprintf("calling config item set"))
 
-			err = lxcSetConfigItem(cc, "lxc.cgroup.pids.max", fmt.Sprintf("%d", valueInt))
+			//err = lxcSetConfigItem(cc, "lxc.cgroup.pids.max", fmt.Sprintf("%d", valueInt))
 			if err != nil {
 				return err
 			}
@@ -2627,9 +2634,15 @@ func (c *containerLXC) Stop(stateful bool) error {
 	}
 
 	// Fork-bomb mitigation, prevent forking from this point on
+	logger.Warnf(fmt.Sprintf("approaching cgroup disabled"))
+
 	if c.state.OS.CGroupPidsController != sys.CGroupDisabled {
+		logger.Warnf(fmt.Sprintf("controller not disabled"))
+
 		// Attempt to disable forking new processes
 		c.CGroupSet(cgroup.PidsMax, "0")
+		logger.Warnf(fmt.Sprintf("after the cgroup set"))
+
 	} else if c.state.OS.CGroupFreezerController != sys.CGroupDisabled {
 		// Attempt to freeze the container
 		freezer := make(chan bool, 1)
@@ -3924,6 +3937,8 @@ func (c *containerLXC) VolatileSet(changes map[string]string) error {
 
 func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 	// Set sane defaults for unset keys
+	logger.Warnf("entered the update method,")
+
 	if args.Project == "" {
 		args.Project = "default"
 	}
@@ -4287,13 +4302,22 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 					priority = 10
 				}
 
+				logger.Warnf(fmt.Sprintf("inside update method" ))
+
 				err = c.CGroupSet(cgroup.BlkioWeight, fmt.Sprintf("%d", priority))
 				if err != nil {
 					return err
 				}
 			} else if key == "limits.memory" || strings.HasPrefix(key, "limits.memory.") {
 				// Skip if no memory CGroup
+				logger.Debugf("Failed to u device n")
+
+				logger.Warnf(fmt.Sprintf("limits.memory" ))
+
 				if c.state.OS.CGroupMemoryController == sys.CGroupDisabled {
+					logger.Warnf(fmt.Sprintf("controller disabled" ))
+					logger.Debugf("Failed to n")
+
 					continue
 				}
 
@@ -4431,6 +4455,7 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 						return err
 					}
 				}
+				logger.Warnf("Failfweuidshift device n")
 
 				// Configure the swappiness
 				if key == "limits.memory.swap" || key == "limits.memory.swap.priority" {
@@ -4491,6 +4516,8 @@ func (c *containerLXC) Update(args db.InstanceArgs, userRequested bool) error {
 					return err
 				}
 			} else if key == "limits.processes" {
+				logger.Warnf("Failed to adlkjvice n")
+
 				if c.state.OS.CGroupPidsController == sys.CGroupDisabled {
 					continue
 				}
