@@ -31,7 +31,7 @@ func (s *OS) initCGroup() {
 	// Read all v2 controllers for later parsing
 	v2controllers := ""
 	contents, err := ioutil.ReadFile("/sys/fs/cgroup/cgroup.controllers")
-	if err != nil {
+	if err == nil {
 		v2controllers = string(contents)
 	}
 
